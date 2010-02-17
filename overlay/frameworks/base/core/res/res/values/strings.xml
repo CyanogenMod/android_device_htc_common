@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/* //device/apps/common/assets/res/any/strings.xml
+**
+** Copyright 2006, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- An Array of [[Carrier-ID]                     -->
+    <!--              [default-locale]                 -->
+    <!--              [default-wifi-allowed-channels]] -->
+    <string-array translatable="false" name="carrier_properties">
+        <item>AirTel-India</item>
+            <item>en_IN</item>
+            <item></item>
+        <item>Chunghwa-Taiwan</item>
+            <item>zh_TW</item>
+            <item></item>
+        <item>DCM</item>
+            <item>ja_JP</item>
+            <item>14</item>
+        <item>Era</item>
+            <item>pl_PL</item>
+            <item></item>
+        <item>H3G-Italy</item>
+            <item>it_IT</item>
+            <item></item>
+        <item>Hutch-Australia</item>
+            <item>en_AU</item>
+            <item>11</item>
+        <item>iTELEF-Spain</item>
+            <item>es_ES</item>
+            <item></item>
+        <item>OPTUS-Australia</item>
+            <item>en_AU</item>
+            <item>11</item>
+        <item>ORANGE-French</item>
+            <item>fr_FR</item>
+            <item></item>
+        <item>SMC-Voda-HK</item>
+            <item>zh_HK</item>
+            <item></item>
+        <item>StarHub-Singapore</item>
+            <item>en_SG</item>
+            <item>11</item>
+        <item>TIM-Italy</item>
+            <item>it_IT</item>
+            <item></item>
+        <item>TMA</item>
+            <item>de_AT</item>
+            <item>13</item>
+        <item>TMCZ</item>
+            <item>cs_CZ</item>
+            <item>13</item>
+        <item>TMD</item>
+            <item>de_DE</item>
+            <item>13</item>
+        <item>TMHR</item>
+            <item>hr_HR</item>
+            <item></item>
+        <item>TMMK</item>
+            <item>mk_MK</item>
+            <item></item>
+        <item>TMNL</item>
+            <item>nl_NL</item>
+            <item>13</item>
+        <item>TMSK</item>
+            <item>sk_SK</item>
+            <item></item>
+        <item>TMUK</item>
+            <item>en_GB</item>
+            <item>13</item>
+        <item>TMUS</item>
+            <item>en_US</item>
+            <item>11</item>
+        <item>VODA-Africa-South</item>
+            <item>en_ZA</item>
+            <item></item>
+        <item>VODA-Australia</item>
+            <item>en_AU</item>
+            <item>11</item>
+        <item>VODA-Germany</item>
+            <item>de_DE</item>
+            <item>13</item>
+        <item>VODA-Greece</item>
+            <item>el_GR</item>
+            <item></item>
+        <item>VODA-Ireland</item>
+            <item>en_IE</item>
+            <item></item>
+        <item>VODA-Italy</item>
+            <item>it_IT</item>
+            <item></item>
+        <item>VODA-Mobilkom</item>
+            <item>de_AT</item>
+            <item>13</item>
+        <item>VODA-Netherland</item>
+            <item>nl_NL</item>
+            <item>13</item>
+        <item>VODA-New-Zealand</item>
+            <item>en_NZ</item>
+            <item></item>
+        <item>VODA-Portugal</item>
+            <item>pt_PT</item>
+            <item></item>
+        <item>VODA-SFR</item>
+            <item>fr_FR</item>
+            <item></item>
+        <item>VODA-Spain</item>
+            <item>es_ES</item>
+            <item></item>
+        <item>VODA-Swisscom-DE</item>
+            <item>de_CH</item>
+            <item>13</item>
+        <item>VODA-Swisscom-FR</item>
+            <item>fr_CH</item>
+            <item></item>
+        <item>VODA-Swisscom-IT</item>
+            <item>it_CH</item>
+            <item></item>
+        <item>VODA-Swisscom-WWE</item>
+            <item>en_CH</item>
+            <item></item>
+        <item>VODA-UK</item>
+            <item>en_GB</item>
+            <item>13</item>
+    </string-array>
+</resources>
