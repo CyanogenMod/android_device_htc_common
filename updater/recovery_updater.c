@@ -24,7 +24,7 @@
 #include "edify/expr.h"
 #include "firmware.h"
 
-char* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
+Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
     if (argc != 6) {
         return ErrorAbort(state, "%s() expects 6 args, got %d", name, argc);
     }
@@ -36,60 +36,57 @@ char* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
     }
     ++type;
 
-    char* image_string;
-    char* width_string;
-    char* height_string;
-    char* bpp_string;
-    char* busy_string;
-    char* fail_string;
-    if (ReadArgs(state, argv, 6, &image_string,
+    Value* image;
+    Value* width_string;
+    Value* height_string;
+    Value* bpp_string;
+    Value* busy;
+    Value* fail;
+    if (ReadValueArgs(state, argv, 6, &image,
                  &width_string, &height_string, &bpp_string,
-                 &busy_string, &fail_string) < 0) {
+                 &busy, &fail) < 0) {
         return NULL;
     }
 
-    int width = strtol(width_string, NULL, 10);
-    int height = strtol(height_string, NULL, 10);
-    int bpp = strtol(bpp_string, NULL, 10);
+    int width = 0, height = 0, bpp = 0;
 
-    long image_size = *(long *)image_string;
-    if (image_size < 0) {
-        printf("image argument is missing data (length %ld)\n", image_size);
+    if (width_string->type != VAL_STRING ||
+        (width = strtol(width_string->data, NULL, 10)) == 0) {
+        printf("%s(): bad width argument", name);
+    }
+    if (height_string->type != VAL_STRING ||
+        (height = strtol(height_string->data, NULL, 10)) == 0) {
+        printf("%s(): bad height argument", name);
+    }
+    if (bpp_string->type != VAL_STRING ||
+        (bpp = strtol(bpp_string->data, NULL, 10)) == 0) {
+        printf("%s(): bad bpp argument", name);
+    }
+
+    if (image->type != VAL_BLOB) {
+        printf("image argument is not blob (is type %d)\n", image->type);
         goto done;
     }
-    char* image_data = image_string + sizeof(long);
 
-    long busy_size = *(long *)busy_string;
-    char* busy_data;
-    if (busy_size > 0) {
-        busy_data = busy_string + sizeof(long);
-    } else {
-        busy_data = NULL;
-    }
-
-    long fail_size = *(long *)fail_string;
-    char* fail_data;
-    if (fail_size > 0) {
-        fail_data = fail_string + sizeof(long);
-    } else {
-        fail_data = NULL;
-    }
-
-    install_firmware_update(type, image_data, image_size,
-                            width, height, bpp,
-                            busy_data, fail_data,
-                            "/tmp/recovery.log");
+    install_firmware_update(
+        type,
+        image->data,
+        image->size,
+        width, height, bpp,
+        busy->size > 0 ? busy->data : NULL,
+        fail->size > 0 ? fail->data : NULL,
+        "/tmp/recovery.log");
     printf("%s: install_firmware_update returned!\n", name);
 
   done:
-    free(image_string);
-    free(width_string);
-    free(height_string);
-    free(bpp_string);
-    free(busy_string);
-    free(fail_string);
+    FreeValue(image);
+    FreeValue(width_string);
+    FreeValue(height_string);
+    FreeValue(bpp_string);
+    FreeValue(busy);
+    FreeValue(fail);
     // install_firmware_update should reboot.  If it returns, it failed.
-    return strdup("");
+    return StringValue(strdup(""));
 }
 
 void Register_librecovery_updater_htc() {
