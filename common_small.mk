@@ -18,6 +18,10 @@
 # HTC devices. These are specially fine-tuned for devices with a small
 # system partition.
 
-$(call inherit-product, device/htc/common/common.mk)
+# Get additional product configuration from the non-open-source
+# counterpart to this file, if it exists. This is the most specific
+# inheritance, and therefore comes first
+$(call inherit-product-if-exists, vendor/htc/common/common_small-vendor.mk)
 
--include vendor/htc/common/common_small-vendor.mk
+# Inherit from the non-small variant of this file
+$(call inherit-product, device/htc/common/common.mk)

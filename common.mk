@@ -17,7 +17,12 @@
 # This lists the aspects that are unique to HTC but shared between all
 # HTC devices
 
--include vendor/htc/common/common-vendor.mk
+# Sets an HTC-specific device-agnostic overlay
+DEVICE_PACKAGE_OVERLAYS := device/htc/common/overlay
 
+# Get additional product configuration from the non-open-source
+# counterpart to this file, if it exists
+$(call inherit-product-if-exists, vendor/htc/common/common-vendor.mk)
+
+# Override - we don't want to use any inherited value
 PRODUCT_MANUFACTURER := HTC
-DEVICE_PACKAGE_OVERLAYS := device/htc/common/overlay $(DEVICE_PACKAGE_OVERLAYS)
