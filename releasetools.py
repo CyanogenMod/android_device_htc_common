@@ -69,6 +69,7 @@ def FullOTA_InstallEnd(info):
     radio_img = info.input_zip.read("RADIO/radio.img")
   except KeyError:
     print "warning: no radio image in input target_files; not flashing radio"
+    return
 
   info.script.Print("Writing radio image...")
 
