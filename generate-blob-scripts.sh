@@ -43,40 +43,37 @@ then
 fi
 shift
 
+DEVICES="dream passion sapphire"
+
 ARCHIVEDIR=archive-$(date +%s)
 mkdir $ARCHIVEDIR
 
 repo sync
 repo sync
+repo sync
 . build/envsetup.sh
-rm -rf out
-lunch full_dream-user
-make -j8
-cat out/target/product/dream/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/dream-with.txt
-rm -rf out
-lunch full_sapphire-user
-make -j8
-cat out/target/product/sapphire/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/sapphire-with.txt
-rm -rf out
-lunch full_passion-user
-make -j8
-cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/passion-with.txt
+for DEVICENAME in $DEVICES
+do
+  rm -rf out
+  lunch full_$DEVICENAME-user
+  make -j8
+  cat out/target/product/$DEVICENAME/installed-files.txt |
+    cut -b 15- |
+    sort > $ARCHIVEDIR/$DEVICENAME-with.txt
+done
 rm -rf vendor
-rm -rf out
-lunch full_dream-user
-make -j8
-cat out/target/product/dream/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/dream-without.txt
-rm -rf out
-lunch full_sapphire-user
-make -j8
-cat out/target/product/sapphire/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/sapphire-without.txt
-rm -rf out
-lunch full_passion-user
-make -j8
-cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/passion-without.txt
+for DEVICENAME in $DEVICES
+do
+  rm -rf out
+  lunch full_$DEVICENAME-user
+  make -j8
+  cat out/target/product/$DEVICENAME/installed-files.txt |
+    cut -b 15- |
+    sort > $ARCHIVEDIR/$DEVICENAME-without.txt
+done
 rm -rf out
 
-for DEVICENAME in dream passion sapphire
+for DEVICENAME in $DEVICES
 do
   for FILESTYLE in extract unzip
   do
