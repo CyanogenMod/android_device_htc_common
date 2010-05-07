@@ -52,33 +52,32 @@ repo sync
 rm -rf out
 lunch full_dream-user
 make -j8
-cat out/target/product/dream/installed-files.txt | cut -b 15- | sort > dream-with.txt
+cat out/target/product/dream/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/dream-with.txt
 rm -rf out
 lunch full_sapphire-user
 make -j8
-cat out/target/product/sapphire/installed-files.txt | cut -b 15- | sort > sapphire-with.txt
+cat out/target/product/sapphire/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/sapphire-with.txt
 rm -rf out
 lunch full_passion-user
 make -j8
-cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > passion-with.txt
+cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/passion-with.txt
 rm -rf vendor
 rm -rf out
 lunch full_dream-user
 make -j8
-cat out/target/product/dream/installed-files.txt | cut -b 15- | sort > dream-without.txt
+cat out/target/product/dream/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/dream-without.txt
 rm -rf out
 lunch full_sapphire-user
 make -j8
-cat out/target/product/sapphire/installed-files.txt | cut -b 15- | sort > sapphire-without.txt
+cat out/target/product/sapphire/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/sapphire-without.txt
 rm -rf out
 lunch full_passion-user
 make -j8
-cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > passion-without.txt
+cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > $ARCHIVEDIR/passion-without.txt
 rm -rf out
 
 for DEVICENAME in dream passion sapphire
 do
-  cp $DEVICENAME-with.txt $DEVICENAME-without.txt $ARCHIVEDIR
   for FILESTYLE in extract unzip
   do
     (
@@ -104,7 +103,7 @@ do
     echo
     echo 'mkdir -p ../../../vendor/htc/$DEVICE/proprietary'
 
-    diff $DEVICENAME-without.txt $DEVICENAME-with.txt |
+    diff $ARCHIVEDIR/$DEVICENAME-without.txt $ARCHIVEDIR/$DEVICENAME-with.txt |
       grep '>' |
       cut -b 3- |
       while read FULLPATH
@@ -148,7 +147,7 @@ do
     echo '-files.sh - DO NOT EDIT'
 
     FOUND=false
-    diff $DEVICENAME-without.txt $DEVICENAME-with.txt |
+    diff $ARCHIVEDIR/$DEVICENAME-without.txt $ARCHIVEDIR/$DEVICENAME-with.txt |
       grep '>' |
       cut -b 3- |
       while read FULLPATH
@@ -170,7 +169,7 @@ do
     echo
 
     FOUND=false
-    diff $DEVICENAME-without.txt $DEVICENAME-with.txt |
+    diff $ARCHIVEDIR/$DEVICENAME-without.txt $ARCHIVEDIR/$DEVICENAME-with.txt |
       grep '>' |
       cut -b 3- |
       while read FULLPATH
