@@ -74,6 +74,7 @@ rm -rf out
 lunch full_passion-user
 make -j8
 cat out/target/product/passion/installed-files.txt | cut -b 15- | sort > passion-without.txt
+rm -rf out
 
 for DEVICENAME in dream passion sapphire
 do
