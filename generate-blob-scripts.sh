@@ -71,7 +71,6 @@ do
     cut -b 15- |
     sort > $ARCHIVEDIR/$DEVICENAME-without.txt
 done
-rm -rf out
 
 for DEVICENAME in $DEVICES
 do
@@ -204,3 +203,10 @@ do
 
 done
 
+echo * device/* device/htc/* |
+  tr \  \\n |
+  grep -v ^archive- |
+  grep -v ^device$ |
+  grep -v ^device/htc$ |
+  grep -v ^device/htc/common$ |
+  xargs rm -rf
