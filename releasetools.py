@@ -17,7 +17,7 @@
 
 import common
 import re
-
+import sha
 
 def FullOTA_Assertions(info):
   AddBootloaderAssertion(info, info.input_zip)
@@ -46,12 +46,15 @@ def InstallRadio(radio_img, api_version, input_zip, info):
     error_img = input_zip.read("RADIO/firmware_error.565")
     width, height, bpp = bitmap_txt.split()
 
+    radio_sha = sha.sha(radio_img).hexdigest()
+
     info.script.UnmountAll()
     info.script.AppendExtra(('''
 assert(htc.install_radio(package_extract_file("radio.img"),
                          %(width)s, %(height)s, %(bpp)s,
                          package_extract_file("install.565"),
-                         package_extract_file("error.565")));
+                         package_extract_file("error.565"),
+                         %(radio_sha)s));
 ''' % locals()).lstrip())
 
     common.ZipWriteStr(info.output_zip, "install.565", install_img)

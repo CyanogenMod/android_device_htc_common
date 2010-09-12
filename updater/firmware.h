@@ -27,6 +27,7 @@ int install_firmware_update(const char *update_type,
                             int width, int height, int bpp,
                             const char* busy_image,
                             const char* fail_image,
-                            const char *log_filename);
+                            const char *log_filename,
+                            const uint8_t* expected_sha1);
 
 #endif

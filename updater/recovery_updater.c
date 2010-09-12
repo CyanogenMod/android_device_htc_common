@@ -21,12 +21,13 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include "mincrypt/sha.h"
 #include "edify/expr.h"
 #include "firmware.h"
 
 Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
-    if (argc != 6) {
-        return ErrorAbort(state, "%s() expects 6 args, got %d", name, argc);
+    if (argc != 7) {
+        return ErrorAbort(state, "%s() expects 7 args, got %d", name, argc);
     }
 
     char* type = strrchr(name, '_');
@@ -42,9 +43,10 @@ Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
     Value* bpp_string;
     Value* busy;
     Value* fail;
-    if (ReadValueArgs(state, argv, 6, &image,
-                 &width_string, &height_string, &bpp_string,
-                 &busy, &fail) < 0) {
+    Value* expected_sha1_string;
+    if (ReadValueArgs(state, argv, 7, &image,
+                      &width_string, &height_string, &bpp_string,
+                      &busy, &fail, &expected_sha1_string) < 0) {
         return NULL;
     }
 
@@ -68,6 +70,24 @@ Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
         goto done;
     }
 
+    uint8_t expected_sha1[SHA_DIGEST_SIZE];
+    char* data = expected_sha1_string->data;
+    if (expected_sha1_string->type != VAL_STRING ||
+        strlen(data) != SHA_DIGEST_SIZE*2) {
+        printf("%s(): bad expected_sha1 argument", name);
+        goto done;
+    }
+    printf("expected sha1 is: ");
+    int i;
+    for (i = 0; i < SHA_DIGEST_SIZE; ++i) {
+        char temp = data[i*2+2];
+        data[i*2+2] = '\0';
+        expected_sha1[i] = strtol(data+i*2, NULL, 16);
+        data[i*2+2] = temp;
+        printf("%02x", expected_sha1[i]);
+    }
+    printf("\n");
+
     install_firmware_update(
         type,
         image->data,
@@ -75,7 +95,8 @@ Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
         width, height, bpp,
         busy->size > 0 ? busy->data : NULL,
         fail->size > 0 ? fail->data : NULL,
-        "/tmp/recovery.log");
+        "/tmp/recovery.log",
+        expected_sha1);
     printf("%s: install_firmware_update returned!\n", name);
 
   done:

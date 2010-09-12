@@ -18,6 +18,7 @@
 #include "common.h"
 #include "firmware.h"
 #include "mtdutils/mtdutils.h"
+#include "mincrypt/sha.h"
 
 #include <errno.h>
 #include <string.h>
@@ -58,13 +59,98 @@
 #undef LOGE
 #define LOGE(...) fprintf(stderr, "E:" __VA_ARGS__)
 
+
+int verify_image(const uint8_t* expected_sha1) {
+    MtdPartition* part = mtd_find_partition_by_name(CACHE_NAME);
+    if (part == NULL) {
+        printf("verify image: failed to find cache partition\n");
+        return -1;
+    }
+
+    size_t block_size;
+    if (mtd_partition_info(part, NULL, &block_size, NULL) != 0) {
+        printf("verify image: failed to get cache partition block size\n");
+        return -1;
+    }
+    printf("block size is 0x%x\n", block_size);
+
+    char* buffer = malloc(block_size);
+    if (buffer == NULL) {
+        printf("verify image: failed to allocate memory\n");
+        return -1;
+    }
+
+    MtdReadContext* ctx = mtd_read_partition(part);
+    if (ctx == NULL) {
+        printf("verify image: failed to init read context\n");
+        return -1;
+    }
+
+    size_t pos = 0;
+    if (mtd_read_data(ctx, buffer, block_size) != block_size) {
+        printf("verify image: failed to read header\n");
+        return -1;
+    }
+    pos += block_size;
+
+    if (strncmp(buffer, "MSM-RADIO-UPDATE", 16) != 0) {
+        printf("verify image: header missing magic\n");
+        return -1;
+    }
+
+    unsigned image_offset = *(unsigned*)(buffer+24);
+    unsigned image_length = *(unsigned*)(buffer+28);
+    printf("image offset 0x%x length 0x%x\n", image_offset, image_length);
+
+    while (pos < image_offset) {
+        size_t to_read = image_offset - pos;
+        if (to_read > block_size) to_read = block_size;
+        ssize_t read = mtd_read_data(ctx, buffer, to_read);
+        if (read < 0) {
+            printf("verify image: failed to skip to image start\n");
+            return -1;
+        }
+        pos += read;
+    }
+
+    SHA_CTX sha_ctx;
+    SHA_init(&sha_ctx);
+
+    size_t total = 0;
+    while (total < image_length) {
+        size_t to_read = image_length - total;
+        if (to_read > block_size) to_read = block_size;
+        ssize_t read = mtd_read_data(ctx, buffer, to_read);
+        if (read < 0) {
+            printf("verify image: failed reading image (read 0x%x so far)\n",
+                   total);
+            return -1;
+        }
+        SHA_update(&sha_ctx, buffer, read);
+        total += read;
+    }
+
+    free(buffer);
+
+    const uint8_t* sha1 = SHA_final(&sha_ctx);
+    if (memcmp(sha1, expected_sha1, SHA_DIGEST_SIZE) != 0) {
+        printf("verify image: sha1 doesn't match\n");
+        return -1;
+    }
+
+    printf("verify image: verification succeeded\n");
+
+    return 0;
+}
+
 int install_firmware_update(const char *update_type,
                             const char *update_data,
                             size_t update_length,
                             int width, int height, int bpp,
                             const char* busy_image,
                             const char* fail_image,
-                            const char *log_filename) {
+                            const char *log_filename,
+                            const uint8_t* expected_sha1) {
     if (update_data == NULL || update_length == 0) return 0;
 
     mtd_scan_partitions();
@@ -87,18 +173,21 @@ int install_firmware_update(const char *update_type,
         return -1;
     }
 
-    /* The update image is fully written, so now we can instruct the bootloader
-     * to install it.  (After doing so, it will come back here, and we will
-     * wipe the cache and reboot into the system.)
-     */
-    snprintf(boot.command, sizeof(boot.command), "update-%s", update_type);
-    if (set_bootloader_message(&boot)) {
-        return -1;
+    if (verify_image(expected_sha1) == 0) {
+        /* The update image is fully written, so now we can instruct
+         * the bootloader to install it.  (After doing so, it will
+         * come back here, and we will wipe the cache and reboot into
+         * the system.)
+         */
+        snprintf(boot.command, sizeof(boot.command), "update-%s", update_type);
+        if (set_bootloader_message(&boot)) {
+            return -1;
+        }
+
+        reboot(RB_AUTOBOOT);
+
+        // Can't reboot?  WTF?
+        LOGE("Can't reboot\n");
     }
-
-    reboot(RB_AUTOBOOT);
-
-    // Can't reboot?  WTF?
-    LOGE("Can't reboot\n");
     return -1;
 }
