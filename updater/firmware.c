@@ -101,16 +101,11 @@ int verify_image(const uint8_t* expected_sha1) {
     unsigned image_offset = *(unsigned*)(buffer+24);
     unsigned image_length = *(unsigned*)(buffer+28);
     printf("image offset 0x%x length 0x%x\n", image_offset, image_length);
+    mtd_read_skip_to(ctx, image_offset);
 
-    while (pos < image_offset) {
-        size_t to_read = image_offset - pos;
-        if (to_read > block_size) to_read = block_size;
-        ssize_t read = mtd_read_data(ctx, buffer, to_read);
-        if (read < 0) {
-            printf("verify image: failed to skip to image start\n");
-            return -1;
-        }
-        pos += read;
+    FILE* f = fopen("/tmp/read-radio.dat", "wb");
+    if (f == NULL) {
+        printf("verify image: failed to open temp file\n");
     }
 
     SHA_CTX sha_ctx;
@@ -126,11 +121,17 @@ int verify_image(const uint8_t* expected_sha1) {
                    total);
             return -1;
         }
+        if (f) {
+            fwrite(buffer, 1, read, f);
+        }
         SHA_update(&sha_ctx, buffer, read);
         total += read;
     }
 
+    if (f) fclose(f);
+
     free(buffer);
+    mtd_read_close(ctx);
 
     const uint8_t* sha1 = SHA_final(&sha_ctx);
     if (memcmp(sha1, expected_sha1, SHA_DIGEST_SIZE) != 0) {
