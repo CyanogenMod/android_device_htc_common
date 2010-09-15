@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
-#include "mincrypt/sha.h"
 #include "edify/expr.h"
 #include "firmware.h"
+#include "mincrypt/sha.h"
+#include "minzip/Zip.h"
+#include "mtdutils/mounts.h"
+#include "updater/updater.h"
 
 Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
     if (argc != 7) {
@@ -48,6 +52,35 @@ Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
                       &width_string, &height_string, &bpp_string,
                       &busy, &fail, &expected_sha1_string) < 0) {
         return NULL;
+    }
+
+    // close the package
+    ZipArchive* za = ((UpdaterInfo*)(state->cookie))->package_zip;
+    mzCloseZipArchive(za);
+    ((UpdaterInfo*)(state->cookie))->package_zip = NULL;
+
+    // Try to unmount /cache.  If we fail (because we're running in an
+    // older recovery that still has the package file open), try to
+    // remount it read-only.  If that fails, abort.
+    sync();
+    scan_mounted_volumes();
+    MountedVolume* vol = find_mounted_volume_by_mount_point("/cache");
+    int result = unmount_mounted_volume(vol);
+    if (result != 0) {
+        printf("%s(): failed to unmount cache (%d: %s)\n",
+               name, result, strerror(errno));
+
+        result = remount_read_only(vol);
+        if (result != 0) {
+            printf("%s(): failed to remount cache (%d: %s)\n",
+                   name, result, strerror(errno));
+            return StringValue(strdup(""));
+        } else {
+            printf("%s(): remounted cache\n", name);
+        }
+        sync();
+    } else {
+        printf("%s(): unmounted cache\n", name);
     }
 
     int width = 0, height = 0, bpp = 0;
