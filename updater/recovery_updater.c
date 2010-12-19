@@ -26,7 +26,7 @@
 #include "firmware.h"
 #include "mincrypt/sha.h"
 #include "minzip/Zip.h"
-#include "mtdutils/mounts.h"
+#include "mounts.h"
 #include "updater/updater.h"
 
 Value* UpdateFn(const char* name, State* state, int argc, Expr* argv[]) {
