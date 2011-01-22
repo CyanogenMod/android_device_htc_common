@@ -29,3 +29,5 @@ $(call inherit-product-if-exists, vendor/htc/common/common-vendor.mk)
 
 # Override - we don't want to use any inherited value
 PRODUCT_MANUFACTURER := HTC
+
+$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
